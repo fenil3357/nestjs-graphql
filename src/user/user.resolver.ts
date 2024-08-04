@@ -1,35 +1,62 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ID } from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
+import { httpStatusCodes } from 'src/utils/responseConfig';
+import { CustomGraphQLException, GraphQLErrorCodes } from 'src/utils/graphqlErrorResponse';
 
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Mutation(() => User)
-  createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
-    return this.userService.create(createUserInput);
+  async createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
+    try {
+      const user = await this.userService.create(createUserInput);
+      return user;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 
-  @Query(() => [User], { name: 'user' })
-  findAll() {
-    return this.userService.findAll();
+  @Query(() => [User], { name: 'users' })
+  async findAll() {
+    try {
+      const users = await this.userService.findAll();
+      return users;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 
   @Query(() => User, { name: 'user' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.userService.findOne(id);
+  async findOne(@Args('id', { type: () => Int }) id: number) {
+    try {
+      const user = await this.userService.findOne(id);
+      return user;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 
   @Mutation(() => User)
-  updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
-    return this.userService.update(updateUserInput.id, updateUserInput);
+  async updateUser(@Args('id', {type: () => ID}) id: number, @Args('updateUserInput') updateUserInput: UpdateUserInput) {
+    try {
+      const user = await this.userService.update(id, updateUserInput);
+      return user;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 
   @Mutation(() => User)
-  removeUser(@Args('id', { type: () => Int }) id: number) {
-    return this.userService.remove(id);
+  async removeUser(@Args('id', { type: () => Int }) id: number) {
+    try {
+      const user = await this.userService.remove(id);
+      return user;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 }

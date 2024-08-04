@@ -9,9 +9,10 @@ type User {
   password: String
   dob: DateTime
   role: String!
+  gender: String!
   createdAt: DateTime!
   updatedAt: DateTime!
-  deletedAt: DateTime!
+  deletedAt: DateTime
 }
 
 """
@@ -20,22 +21,29 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Query {
+  users: [User!]!
   user(id: Int!): User!
 }
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
-  updateUser(updateUserInput: UpdateUserInput!): User!
+  updateUser(id: ID!, updateUserInput: UpdateUserInput!): User!
   removeUser(id: Int!): User!
 }
 
 input CreateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  username: String!
+  email: String!
+  password: String!
+  dob: DateTime
+  gender: String!
+  role: String!
 }
 
 input UpdateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  username: String
+  password: String
+  dob: DateTime
+  gender: String
+  role: String
 }

@@ -1,6 +1,7 @@
 import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { UserRoleType } from '../types/enum/user.enum.types';
+import { UserGenderType, UserRoleType } from '../types/enum/user.enum.types';
+import { MaxDate } from 'class-validator';
 
 @Entity()
 @ObjectType()
@@ -21,13 +22,17 @@ export class User {
   @Field({ nullable: true })
   password: string;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   @Field({ nullable: true })
   dob?: Date;
 
   @Column({ type: 'enum', enum: UserRoleType })
   @Field()
   role: UserRoleType;
+
+  @Column(({ type: 'enum', enum: UserGenderType }))
+  @Field()
+  gender: UserGenderType;
 
   @CreateDateColumn()
   @Field()
@@ -38,6 +43,6 @@ export class User {
   updatedAt: Date;
 
   @DeleteDateColumn()
-  @Field()
+  @Field({ nullable: true })
   deletedAt: Date;
 }
