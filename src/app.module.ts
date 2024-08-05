@@ -8,6 +8,7 @@ import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
 import { httpStatusCodes } from './utils/responseConfig';
 import { GraphQLErrorCodes } from './utils/graphqlErrorResponse';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { GraphQLErrorCodes } from './utils/graphqlErrorResponse';
       },
     }),
     DatabaseModule,
-    UserModule
+    UserModule,
+    ProductModule
   ],
   controllers: [AppController],
   providers: [AppService],

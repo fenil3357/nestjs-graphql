@@ -1,7 +1,6 @@
-import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { UserGenderType, UserRoleType } from '../types/enum/user.enum.types';
-import { MaxDate } from 'class-validator';
 
 @Entity()
 @ObjectType()

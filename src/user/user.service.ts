@@ -61,7 +61,9 @@ export class UserService {
       }, updateUserInput);
 
       if (user.affected === 0) throw new CustomGraphQLException("This user does not exists.", httpStatusCodes['Not Found'], GraphQLErrorCodes['NOT_FOUND'])
-      return user.raw;
+
+      const updatedUser = await this.findOne(id);
+      return updatedUser;
     } catch (error) {
       throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
     }
@@ -69,12 +71,13 @@ export class UserService {
 
   async remove(id: number): Promise<User> {
     try {
-      const user = await this.userRepository.softDelete({
+      const user = await this.findOne(id);
+      
+      const deletedUser = await this.userRepository.softDelete({
         id
       });
 
-      if (user.affected === 0) throw new CustomGraphQLException("This user does not exists.", httpStatusCodes['Not Found'], GraphQLErrorCodes['NOT_FOUND'])
-      return user.raw;
+      return user;
     } catch (error) {
       throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
     }
