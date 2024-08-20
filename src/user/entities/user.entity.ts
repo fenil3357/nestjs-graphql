@@ -1,7 +1,7 @@
-import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { UserGenderType, UserRoleType } from '../types/enum/user.enum.types';
-import { MaxDate } from 'class-validator';
+import { Product } from 'src/product/entities/product.entity';
 
 @Entity()
 @ObjectType()
@@ -33,6 +33,10 @@ export class User {
   @Column(({ type: 'enum', enum: UserGenderType }))
   @Field()
   gender: UserGenderType;
+
+  @OneToMany((type) => Product, (product) => product.user)
+  @Field(type => [Product], { nullable: true })
+  products : Product[];
 
   @CreateDateColumn()
   @Field()

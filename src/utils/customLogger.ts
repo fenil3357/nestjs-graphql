@@ -1,4 +1,4 @@
-import { LoggerService, Injectable, Logger, ConsoleLogger } from '@nestjs/common';
+import { ConsoleLogger } from '@nestjs/common';
 
 export class CustomLogger extends ConsoleLogger {
   error(message: any, stackOrContext?: string): void;
