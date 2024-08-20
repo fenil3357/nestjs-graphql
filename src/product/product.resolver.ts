@@ -1,35 +1,62 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ID } from '@nestjs/graphql';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
+import { CustomGraphQLException, GraphQLErrorCodes } from 'src/utils/graphqlErrorResponse';
+import { httpStatusCodes } from 'src/utils/responseConfig';
 
 @Resolver(() => Product)
 export class ProductResolver {
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly productService: ProductService) { }
 
   @Mutation(() => Product)
-  createProduct(@Args('createProductInput') createProductInput: CreateProductInput) {
-    return this.productService.create(createProductInput);
+  async createProduct(@Args('createProductInput') createProductInput: CreateProductInput) {
+    try {
+      const product: Awaited<Promise<Product>> = await this.productService.create(createProductInput);
+      return product;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 
-  @Query(() => [Product], { name: 'product' })
-  findAll() {
-    return this.productService.findAll();
+  @Query(() => [Product], { name: 'products' })
+  async findAll() {
+    try {
+      const products: Awaited<Promise<Product[]>> = await this.productService.findAll();
+      return products;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 
   @Query(() => Product, { name: 'product' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.productService.findOne(id);
+  async findOne(@Args('id', { type: () => Int }) id: number) {
+    try {
+      const product: Awaited<Promise<Product>> = await this.productService.findOne(id);
+      return product;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 
   @Mutation(() => Product)
-  updateProduct(@Args('updateProductInput') updateProductInput: UpdateProductInput) {
-    return this.productService.update(updateProductInput.id, updateProductInput);
+  async updateProduct(@Args('id', { type: () => ID }) id: number, @Args('updateProductInput') updateProductInput: UpdateProductInput) {
+    try {
+      const updatedProduct: Awaited<Promise<Product>> = await this.productService.update(id, updateProductInput);
+      return updatedProduct;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 
   @Mutation(() => Product)
-  removeProduct(@Args('id', { type: () => Int }) id: number) {
-    return this.productService.remove(id);
+  async removeProduct(@Args('id', { type: () => Int }) id: number) {
+    try {
+      const deletedProduct: Awaited<Promise<Product>> = await this.productService.remove(id);
+      return deletedProduct;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
   }
 }
