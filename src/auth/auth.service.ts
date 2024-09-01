@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ENV_VALUE } from 'src/config/config';
 import { CustomGraphQLException, GraphQLErrorCodes } from 'src/utils/graphqlErrorResponse';
 import { httpStatusCodes } from 'src/utils/responseConfig';
-import { DECODED_USER_TYPE } from './types/auth.types';
+import { DECODED_USER_TYPE, LOGIN_RESPONSE_TYPE, Tokens } from './types/auth.types';
 import { AuthUserInput } from './dto/authenticate-user.input';
 import { UserService } from 'src/user/user.service';
 import { comparePassword } from 'src/helpers/encryption';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -15,39 +15,43 @@ export class AuthService {
     private readonly userService: UserService
   ) { }
 
-  async authenticate(authUser: AuthUserInput) {
+  async authenticate(authUser: AuthUserInput): Promise<LOGIN_RESPONSE_TYPE> {
     try {
       const { email, password } = authUser;
 
-      const user = await this.userService.findSingleUser({
+      const user: Awaited<User> = await this.userService.findSingleUser({
         email
-      }, ['id', 'email', 'password', 'role']);
+      }, ['id', 'role', 'email', 'password']);
 
       // Validate the password
-      const valid = comparePassword(password, user.password);
+      const valid: Awaited<boolean> = await comparePassword(password, user.password);
 
-      if (!valid) throw new CustomGraphQLException('Invalid password', httpStatusCodes['Unauthorized'], GraphQLErrorCodes['UNAUTHORIZED']);
+      if (!valid) throw new CustomGraphQLException('Incorrect password.', httpStatusCodes['Unauthorized'], GraphQLErrorCodes['UNAUTHORIZED']);
 
       // Sign tokens
-      const tokens = await this.signToken({
+      const tokens: Awaited<Tokens> = await this.signToken({
         id: user.id,
         email: user.email,
         role: user.role
       });
 
-      return tokens;
+      const userData: Awaited<User> = await this.userService.findSingleUser({
+        email
+      })
+
+      return {
+        user: userData,
+        tokens
+      };
     } catch (error) {
       throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Unauthorized'], error?.extensions?.code || GraphQLErrorCodes['UNAUTHORIZED']);
     }
   }
 
-  async signToken(decoded: DECODED_USER_TYPE): Promise<{
-    accessToken: string,
-    refreshToken: string
-  }> {
+  async signToken(decoded: DECODED_USER_TYPE): Promise<Tokens> {
     try {
-      const accessToken = this.jwtService.sign(JSON.stringify(decoded));
-      const refreshToken = this.jwtService.sign(JSON.stringify(decoded));
+      const accessToken: string = this.jwtService.sign(decoded);
+      const refreshToken: string = this.jwtService.sign(decoded);
 
       return {
         accessToken,

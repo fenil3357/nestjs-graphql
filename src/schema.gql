@@ -32,6 +32,16 @@ type User {
   deletedAt: DateTime
 }
 
+type Tokens {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type GraphqlLoginResponse {
+  user: User!
+  tokens: Tokens!
+}
+
 type Query {
   users: [User!]!
   user(id: Int!): User!
@@ -46,6 +56,7 @@ type Mutation {
   createProduct(createProductInput: CreateProductInput!): Product!
   updateProduct(id: ID!, updateProductInput: UpdateProductInput!): Product!
   removeProduct(id: Int!): Product!
+  login(AuthUserInput: AuthUserInput!): GraphqlLoginResponse!
 }
 
 input CreateUserInput {
@@ -76,4 +87,9 @@ input UpdateProductInput {
   name: String
   price: Float
   category: String
+}
+
+input AuthUserInput {
+  email: String!
+  password: String!
 }
