@@ -16,8 +16,4 @@ export class CreateProductInput {
   @IsEnum(ProductCategoryType, { message: 'Invalid product category' })
   @Field()
   category: ProductCategoryType;
-
-  @IsNumber()
-  @Field(type => ID)
-  user: number;
 }

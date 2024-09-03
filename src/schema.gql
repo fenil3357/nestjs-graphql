@@ -44,15 +44,15 @@ type GraphqlLoginResponse {
 
 type Query {
   users: [User!]!
-  user(id: Int!): User!
+  user: User!
   products: [Product!]!
   product(id: Int!): Product!
 }
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
-  updateUser(id: ID!, updateUserInput: UpdateUserInput!): User!
-  removeUser(id: Int!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  removeUser: User!
   createProduct(createProductInput: CreateProductInput!): Product!
   updateProduct(id: ID!, updateProductInput: UpdateProductInput!): Product!
   removeProduct(id: Int!): Product!
@@ -73,14 +73,12 @@ input UpdateUserInput {
   password: String
   dob: DateTime
   gender: String
-  role: String
 }
 
 input CreateProductInput {
   name: String!
   price: Float!
   category: String!
-  user: ID!
 }
 
 input UpdateProductInput {
