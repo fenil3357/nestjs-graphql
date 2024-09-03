@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { httpStatusCodes } from './utils/responseConfig';
 import { GraphQLErrorCodes } from './utils/graphqlErrorResponse';
 import { ProductModule } from './product/product.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { ProductModule } from './product/product.module';
     }),
     DatabaseModule,
     UserModule,
-    ProductModule
+    ProductModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

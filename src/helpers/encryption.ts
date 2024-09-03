@@ -9,10 +9,10 @@ export const encryptPassword = async (password: string) => {
 export const comparePassword = async (
   password: string,
   correctPassword: string,
-) => {
+):Promise<boolean> => {
   try {
     return await bcrypt.compare(password, correctPassword);
   } catch (err) {
-    throw new BadRequestException('Invalid Email or password');
+    throw new BadRequestException('Incorrect Password');
   }
 };

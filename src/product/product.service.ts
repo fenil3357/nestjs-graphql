@@ -3,7 +3,7 @@ import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsSelectByString, FindOptionsWhere, Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { CustomGraphQLException, GraphQLErrorCodes } from 'src/utils/graphqlErrorResponse';
 import { httpStatusCodes } from 'src/utils/responseConfig';
@@ -18,9 +18,9 @@ export class ProductService {
     private userService: UserService
   ) { }
 
-  async create(createProductInput: CreateProductInput): Promise<Product> {
+  async create(createProductInput: CreateProductInput, user_id: number): Promise<Product> {
     try {
-      const user: Awaited<Promise<User>> = await this.userService.findOne(createProductInput.user);
+      const user: Awaited<Promise<User>> = await this.userService.findOne(user_id);
       const product = this.productRepository.create({ ...createProductInput, user });
       await this.productRepository.save(product);
       return product;
@@ -57,10 +57,13 @@ export class ProductService {
     }
   }
 
-  async update(id: number, updateProductInput: UpdateProductInput): Promise<Product> {
+  async update(id: number, user_id: number, updateProductInput: UpdateProductInput): Promise<Product> {
     try {
       const product = await this.productRepository.update({
-        id
+        id,
+        user: {
+          id: user_id
+        }
       }, updateProductInput);
 
       if (product?.affected === 0) throw new CustomGraphQLException('This product does not exists.', httpStatusCodes['Not Found'], GraphQLErrorCodes['NOT_FOUND']);
@@ -72,11 +75,33 @@ export class ProductService {
     }
   }
 
-  async remove(id: number): Promise<Product> {
+  async remove(id: number, user_id: number): Promise<Product> {
     try {
-      const product: Awaited<Promise<Product>> = await this.findOne(id);
+      const product: Awaited<Promise<Product>> = await this.findSingleProduct({
+        id,
+        user: {
+          id: user_id
+        }
+      });
       const deletedProduct = await this.productRepository.delete(id);
       return product;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
+  }
+
+  async findSingleProduct(query: FindOptionsWhere<Product>, projection?: FindOptionsSelectByString<Product>): Promise<Product> {
+    try {
+      const options: FindManyOptions<Product> = {
+        where: query
+      };
+
+      if (projection) options.select = projection;
+
+      const product = await this.productRepository.find(options);
+
+      if (!product || product?.length === 0) throw new CustomGraphQLException('This product does not exists.', httpStatusCodes['Not Found'], GraphQLErrorCodes['NOT_FOUND']);
+      return product[0];
     } catch (error) {
       throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
     }

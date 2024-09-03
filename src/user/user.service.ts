@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsSelectByString, FindOptionsWhere, Repository } from 'typeorm';
 import { encryptPassword } from 'src/helpers/encryption';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
@@ -72,12 +72,29 @@ export class UserService {
   async remove(id: number): Promise<User> {
     try {
       const user = await this.findOne(id);
-      
+
       const deletedUser = await this.userRepository.softDelete({
         id
       });
 
       return user;
+    } catch (error) {
+      throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
+    }
+  }
+
+  async findSingleUser(query: FindOptionsWhere<User>, projection?: FindOptionsSelectByString<User>): Promise<User> {
+    try {
+      const options: FindManyOptions<User> = {
+        where: query
+      };
+
+      if (projection) options.select = projection;
+
+      const user = await this.userRepository.find(options);
+
+      if (!user || user?.length === 0) throw new CustomGraphQLException('This user does not exists.', httpStatusCodes['Not Found'], GraphQLErrorCodes['NOT_FOUND']);
+      return user[0];
     } catch (error) {
       throw new CustomGraphQLException(error.message, error?.extensions?.status || httpStatusCodes['Bad Request'], error?.extensions?.code || GraphQLErrorCodes['BAD_USER_INPUT']);
     }
